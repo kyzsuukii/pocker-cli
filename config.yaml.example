@@ -1,0 +1,10 @@
+env:
+  ADDRESS: 127.0.0.1
+
+commands:
+  http-server:
+    command: "python"
+    args: ["-m", "http.server", "-b", "${ADDRESS}", "${PORT}"]
+    env:
+      PORT: 8080
+    restart_on_fail: true
