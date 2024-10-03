@@ -18,6 +18,7 @@
     "cli"
   ],
   "author": "Dwiky Rizky Ananditya <kyzsuki@gmail.com>",
+  "homepage": "https://github.com/kyzsuukii/pocker-cli",
   "license": "MIT",
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
