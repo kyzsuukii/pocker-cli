@@ -1,6 +1,6 @@
 {
   "name": "pocker-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A process management tool",
   "main": "dist/index.js",
   "bin": {
