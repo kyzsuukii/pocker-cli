@@ -51,6 +51,8 @@ commands:
     args: ["-m", "http.server", "-b", "${ADDRESS}", "${PORT}"]
     env:
       PORT: 8080
+    working_dir: "/path/to/project"
+    log_file: "/path/to/logs/http-server.log"
     restart_on_fail: true
 ```
 
@@ -66,6 +68,8 @@ Let's break down the structure and options:
    - `command`: The main command to execute (in this case, "python").
    - `args`: An array of arguments passed to the command. Note the use of variable substitution (`${ADDRESS}` and `${PORT}`).
    - `env`: Environment variables specific to this process. These override global variables if there's a name conflict.
+   - `working_dir`: The working directory for the process. If not specified, Pocker uses the current directory.
+   - `log_file`: The path to the log file for this process.
    - `restart_on_fail`: A boolean flag indicating whether Pocker should automatically restart the process if it fails.
 
 ### Variable Substitution
@@ -79,8 +83,8 @@ Pocker supports variable substitution in the configuration file. You can use `${
 
 In future versions, Pocker may support additional configuration options for each process, such as:
 
-- Custom working directory
-- Custom log file paths
+- ~~Custom working directory~~
+- ~~Custom log file paths~~
 - Detached mode configuration
 - Process priority settings
 

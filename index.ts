@@ -11,6 +11,8 @@ interface CommandConfig {
   args?: string[];
   env?: { [key: string]: string };
   restart_on_fail?: boolean;
+  working_dir?: string;
+  log_file?: string;
 }
 
 interface Config {
@@ -132,8 +134,25 @@ function startProcess(name: string, detach?: boolean) {
     return;
   }
 
-  const pidFile = path.resolve(process.cwd(), `${name}.pid`);
-  const logFile = path.resolve(process.cwd(), `${name}.log`);
+  const workingDir = cmdConfig.working_dir
+    ? path.resolve(process.cwd(), cmdConfig.working_dir)
+    : process.cwd();
+
+  if (!fs.existsSync(workingDir)) {
+    console.error(`Working directory '${workingDir}' does not exist.`);
+    return;
+  }
+
+  const pidFile = path.resolve(workingDir, `${name}.pid`);
+  const logFile = cmdConfig.log_file
+    ? path.resolve(workingDir, cmdConfig.log_file)
+    : path.resolve(workingDir, `${name}.log`);
+
+  // Ensure the log file's directory exists
+  const logDir = path.dirname(logFile);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
 
   const out = fs.openSync(logFile, "a");
   const err = fs.openSync(logFile, "a");
@@ -154,6 +173,7 @@ function startProcess(name: string, detach?: boolean) {
   const spawnOptions: any = {
     stdio: ["ignore", out, err],
     env: envVars,
+    cwd: workingDir,
   };
 
   if (detach) {
@@ -192,7 +212,11 @@ function startProcess(name: string, detach?: boolean) {
 }
 
 function isProcessRunning(name: string): boolean {
-  const pidFile = path.resolve(process.cwd(), `${name}.pid`);
+  const cmdConfig = commandsConfig[name];
+  const workingDir = cmdConfig.working_dir
+    ? path.resolve(process.cwd(), cmdConfig.working_dir)
+    : process.cwd();
+  const pidFile = path.resolve(workingDir, `${name}.pid`);
   if (fs.existsSync(pidFile)) {
     const pid = parseInt(fs.readFileSync(pidFile, "utf8"), 10);
     if (isRunning(pid)) {
@@ -213,7 +237,11 @@ function stopProcesses(name?: string) {
 }
 
 function stopProcess(name: string) {
-  const pidFile = path.resolve(process.cwd(), `${name}.pid`);
+  const cmdConfig = commandsConfig[name];
+  const workingDir = cmdConfig.working_dir
+    ? path.resolve(process.cwd(), cmdConfig.working_dir)
+    : process.cwd();
+  const pidFile = path.resolve(workingDir, `${name}.pid`);
 
   if (!fs.existsSync(pidFile)) {
     console.log(`No PID file found for '${name}'. Process not running?`);
@@ -248,7 +276,11 @@ function checkStatus(name?: string) {
   const servicesToCheck = name ? [name] : Object.keys(commandsConfig);
 
   for (const serviceName of servicesToCheck) {
-    const pidFile = path.resolve(process.cwd(), `${serviceName}.pid`);
+    const cmdConfig = commandsConfig[serviceName];
+    const workingDir = cmdConfig.working_dir
+      ? path.resolve(process.cwd(), cmdConfig.working_dir)
+      : process.cwd();
+    const pidFile = path.resolve(workingDir, `${serviceName}.pid`);
     if (!fs.existsSync(pidFile)) {
       console.log(`Process '${serviceName}' not running.`);
       continue;
@@ -266,7 +298,11 @@ function checkStatus(name?: string) {
 function listProcesses() {
   console.log("Listing all processes:");
   for (const name of Object.keys(commandsConfig)) {
-    const pidFile = path.resolve(process.cwd(), `${name}.pid`);
+    const cmdConfig = commandsConfig[name];
+    const workingDir = cmdConfig.working_dir
+      ? path.resolve(process.cwd(), cmdConfig.working_dir)
+      : process.cwd();
+    const pidFile = path.resolve(workingDir, `${name}.pid`);
     let status = "stopped";
     if (fs.existsSync(pidFile)) {
       const pid = parseInt(fs.readFileSync(pidFile, "utf8"), 10);
@@ -281,7 +317,13 @@ function listProcesses() {
 }
 
 function showLogs(name: string, options: { follow?: boolean; lines?: string }) {
-  const logFile = path.resolve(process.cwd(), `${name}.log`);
+  const cmdConfig = commandsConfig[name];
+  const workingDir = cmdConfig.working_dir
+    ? path.resolve(process.cwd(), cmdConfig.working_dir)
+    : process.cwd();
+  const logFile = cmdConfig.log_file
+    ? path.resolve(workingDir, cmdConfig.log_file)
+    : path.resolve(workingDir, `${name}.log`);
 
   if (!fs.existsSync(logFile)) {
     console.log(`Log file for '${name}' does not exist.`);
@@ -327,7 +369,10 @@ function inspectProcess(name: string) {
     ...cmdConfig,
   };
 
-  const pidFile = path.resolve(process.cwd(), `${name}.pid`);
+  const workingDir = cmdConfig.working_dir
+    ? path.resolve(process.cwd(), cmdConfig.working_dir)
+    : process.cwd();
+  const pidFile = path.resolve(workingDir, `${name}.pid`);
   let status = "stopped";
   let pid: number | null = null;
   if (fs.existsSync(pidFile)) {

@@ -7,4 +7,6 @@ commands:
     args: ["-m", "http.server", "-b", "${ADDRESS}", "${PORT}"]
     env:
       PORT: 8080
+    working_dir: "./example"
+    log_file: "./logs/my_app.log"
     restart_on_fail: true
