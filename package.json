@@ -1,6 +1,6 @@
 {
   "name": "pocker-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A process management tool",
   "main": "dist/index.js",
   "bin": {
@@ -30,6 +30,8 @@
     "js-yaml": "^4.1.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "example",
+    "README.md"
   ]
 }

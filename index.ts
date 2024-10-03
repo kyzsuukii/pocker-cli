@@ -21,7 +21,7 @@ interface Config {
 const program = new Command();
 
 program
-  .option("-c, --config <path>", "Specify path to config.yaml", "config.yaml")
+  .option("-c, --config <path>", "Specify path to config.yaml", "pocker.yaml")
   .option("-d, --detach", "Run the command in the background");
 
 program.parseOptions(process.argv);
